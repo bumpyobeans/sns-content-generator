@@ -131,20 +131,16 @@
     .thumb-section { margin-top: 22px; border-top: 1px solid var(--cream-dark); padding-top: 22px; }
     .thumb-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.07em; }
 
-    .thumbnail { position: relative; overflow: hidden; border-radius: 10px; background: linear-gradient(135deg, #3B2314 0%, #8B5E3C 60%, #C4956A 100%); }
+    .thumbnail { position: relative; overflow: hidden; border-radius: 10px; background: #1a0f08; }
     .thumb-square { width: 100%; aspect-ratio: 1/1; max-width: 380px; }
     .thumb-reels  { aspect-ratio: 9/16; max-width: 220px; }
     .thumb-wide   { width: 100%; aspect-ratio: 16/9; }
 
-    .thumb-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.75; display: none; }
-    .thumb-overlay { position: absolute; inset: 0; background: linear-gradient(160deg, rgba(59,35,20,0.15) 0%, rgba(59,35,20,0.70) 100%); }
-    .thumb-inner { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 7%; }
-    .thumb-logo-text { font-family: 'Noto Serif KR', serif; color: rgba(255,255,255,0.92); font-size: clamp(0.65rem, 1.8vw, 0.95rem); letter-spacing: 0.18em; font-weight: 600; }
-    .thumb-center { text-align: center; }
-    .thumb-headline { font-family: 'Noto Serif KR', serif; color: #fff; font-size: clamp(1rem, 4vw, 1.75rem); font-weight: 700; line-height: 1.3; text-shadow: 0 2px 10px rgba(0,0,0,0.45); }
-    .thumb-sub { color: rgba(255,255,255,0.82); font-size: clamp(0.6rem, 1.6vw, 0.85rem); margin-top: 8px; letter-spacing: 0.04em; }
-    .thumb-bottom { display: flex; justify-content: flex-end; }
-    .thumb-badge { background: rgba(255,255,255,0.13); backdrop-filter: blur(4px); color: rgba(255,255,255,0.75); font-size: clamp(0.5rem, 1.3vw, 0.7rem); padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); letter-spacing: 0.05em; }
+    .thumb-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 1; display: none; }
+    .thumb-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.08) 50%, transparent 100%); }
+    .thumb-inner { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-start; padding: 6% 7%; }
+    .thumb-headline { font-family: 'Noto Sans KR', sans-serif; color: #fff; font-size: clamp(1rem, 4.2vw, 1.9rem); font-weight: 700; line-height: 1.35; text-shadow: 0 2px 14px rgba(0,0,0,0.75), 0 1px 4px rgba(0,0,0,0.5); word-break: keep-all; max-width: 85%; }
+    .thumb-sub { color: rgba(255,255,255,0.88); font-size: clamp(0.62rem, 1.7vw, 0.88rem); margin-top: 7px; font-weight: 400; text-shadow: 0 1px 6px rgba(0,0,0,0.65); letter-spacing: 0.01em; }
 
     .download-btn { display: inline-block; margin-top: 10px; padding: 7px 18px; background: transparent; border: 1.5px solid var(--brown-light); border-radius: 6px; color: var(--brown-mid); cursor: pointer; font-size: 0.82rem; font-family: 'Noto Sans KR', sans-serif; transition: all 0.15s; }
     .download-btn:hover:not(:disabled) { background: var(--brown-dark); border-color: var(--brown-dark); color: #fff; }
@@ -241,12 +237,8 @@
           <img class="thumb-bg" id="instagram-bg" src="" alt="">
           <div class="thumb-overlay"></div>
           <div class="thumb-inner">
-            <div class="thumb-logo-text">범표원두</div>
-            <div class="thumb-center">
-              <div class="thumb-headline" id="instagram-headline"></div>
-              <div class="thumb-sub"      id="instagram-sub"></div>
-            </div>
-            <div class="thumb-bottom"></div>
+            <div class="thumb-headline" id="instagram-headline"></div>
+            <div class="thumb-sub"      id="instagram-sub"></div>
           </div>
         </div>
         <button class="download-btn" id="instagram-dl" onclick="downloadThumb('instagram-thumb','instagram-dl','인스타그램')">PNG 저장</button>
@@ -269,12 +261,8 @@
           <img class="thumb-bg" id="karrot-bg" src="" alt="">
           <div class="thumb-overlay"></div>
           <div class="thumb-inner">
-            <div class="thumb-logo-text">범표원두</div>
-            <div class="thumb-center">
-              <div class="thumb-headline" id="karrot-headline"></div>
-              <div class="thumb-sub"      id="karrot-sub"></div>
-            </div>
-            <div class="thumb-bottom"></div>
+            <div class="thumb-headline" id="karrot-headline"></div>
+            <div class="thumb-sub"      id="karrot-sub"></div>
           </div>
         </div>
         <button class="download-btn" id="karrot-dl" onclick="downloadThumb('karrot-thumb','karrot-dl','당근소식')">PNG 저장</button>
@@ -297,12 +285,8 @@
           <img class="thumb-bg" id="threads-bg" src="" alt="">
           <div class="thumb-overlay"></div>
           <div class="thumb-inner">
-            <div class="thumb-logo-text">범표원두</div>
-            <div class="thumb-center">
-              <div class="thumb-headline" id="threads-headline"></div>
-              <div class="thumb-sub"      id="threads-sub"></div>
-            </div>
-            <div class="thumb-bottom"></div>
+            <div class="thumb-headline" id="threads-headline"></div>
+            <div class="thumb-sub"      id="threads-sub"></div>
           </div>
         </div>
         <button class="download-btn" id="threads-dl" onclick="downloadThumb('threads-thumb','threads-dl','스레드')">PNG 저장</button>
@@ -505,7 +489,7 @@
       wrap.style.background = '';
     } else {
       bg.style.display = 'none';
-      wrap.style.background = 'linear-gradient(135deg, #3B2314 0%, #8B5E3C 60%, #C4956A 100%)';
+      wrap.style.background = '#1a0f08';
     }
   }
 
