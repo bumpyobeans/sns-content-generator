@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>범표원두 SNS 콘텐츠 생성기</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brown-dark:  #3B2314;
+      --brown-mid:   #8B5E3C;
+      --brown-light: #C4956A;
+      --cream:       #F5F0E8;
+      --cream-dark:  #EDE4D3;
+      --text:        #2C1810;
+      --text-muted:  #7A6254;
+    }
+
+    body { font-family: 'Noto Sans KR', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+
+    /* ── Modal ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal-box { background: #fff; border-radius: 16px; padding: 36px; width: 420px; max-width: 90vw; }
+    .modal-box h2 { font-family: 'Noto Serif KR', serif; color: var(--brown-dark); margin-bottom: 8px; font-size: 1.4rem; }
+    .modal-box p  { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 24px; line-height: 1.6; }
+    .modal-box input { width: 100%; padding: 12px 16px; border: 1.5px solid var(--cream-dark); border-radius: 8px; font-size: 0.9rem; font-family: monospace; margin-bottom: 12px; outline: none; color: var(--text); }
+    .modal-box input:focus { border-color: var(--brown-mid); }
+    .key-error { color: #c0392b; font-size: 0.8rem; margin-top: 4px; min-height: 18px; }
+
+    /* ── Header ── */
+    header { background: var(--brown-dark); color: #fff; padding: 18px 40px; display: flex; align-items: center; justify-content: space-between; }
+    .header-brand { font-family: 'Noto Serif KR', serif; font-size: 1.1rem; letter-spacing: 0.06em; }
+    .header-sub   { font-size: 0.75rem; opacity: 0.55; margin-top: 2px; }
+    .header-actions button { background: transparent; border: 1px solid rgba(255,255,255,0.35); color: rgba(255,255,255,0.8); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-family: 'Noto Sans KR', sans-serif; }
+    .header-actions button:hover { border-color: rgba(255,255,255,0.7); color: #fff; }
+
+    /* ── Main ── */
+    main { max-width: 760px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* ── Input card ── */
+    .input-card { background: #fff; border-radius: 16px; padding: 32px; box-shadow: 0 2px 20px rgba(59,35,20,0.08); }
+    .input-card h2 { font-family: 'Noto Serif KR', serif; color: var(--brown-dark); margin-bottom: 18px; font-size: 1.1rem; }
+    textarea { width: 100%; min-height: 110px; padding: 16px; border: 1.5px solid var(--cream-dark); border-radius: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.95rem; line-height: 1.7; color: var(--text); resize: vertical; outline: none; }
+    textarea:focus { border-color: var(--brown-mid); }
+    textarea::placeholder { color: #B8A898; }
+
+    .option-row { display: flex; gap: 28px; margin-top: 20px; flex-wrap: wrap; }
+    .option-group { flex: 1; min-width: 190px; }
+    .option-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.07em; }
+    .tag-group { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag { padding: 6px 14px; border: 1.5px solid var(--cream-dark); border-radius: 20px; font-size: 0.85rem; cursor: pointer; color: var(--text-muted); background: #fff; transition: all 0.15s; user-select: none; }
+    .tag:hover { border-color: var(--brown-light); color: var(--brown-mid); }
+    .tag.active { background: var(--brown-dark); border-color: var(--brown-dark); color: #fff; }
+
+    /* ── Image Upload ── */
+    .upload-area {
+      margin-top: 20px;
+      border: 2px dashed var(--cream-dark);
+      border-radius: 10px;
+      transition: border-color 0.15s;
+    }
+    .upload-area.has-image { border-style: solid; border-color: var(--brown-light); }
+    .upload-area:hover { border-color: var(--brown-light); }
+
+    .upload-trigger {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      cursor: pointer;
+    }
+    .upload-icon { font-size: 1.4rem; }
+    .upload-texts { flex: 1; }
+    .upload-main  { font-size: 0.9rem; color: var(--text); }
+    .upload-sub   { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+    #bgImageInput { display: none; }
+
+    .image-preview {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-top: 1px solid var(--cream-dark);
+      background: var(--cream);
+      border-radius: 0 0 8px 8px;
+    }
+    .image-preview.active { display: flex; }
+    .preview-thumb { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; }
+    .preview-name  { flex: 1; font-size: 0.82rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .clear-btn     { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1.1rem; padding: 4px; }
+    .clear-btn:hover { color: var(--brown-dark); }
+
+    /* ── Buttons ── */
+    .generate-btn { display: block; width: 100%; margin-top: 20px; padding: 15px; background: var(--brown-dark); color: #fff; border: none; border-radius: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 1rem; font-weight: 500; cursor: pointer; letter-spacing: 0.04em; transition: background 0.2s; }
+    .generate-btn:hover:not(:disabled) { background: var(--brown-mid); }
+    .generate-btn:disabled { background: #B0A090; cursor: not-allowed; }
+
+    .btn-primary { display: block; width: 100%; padding: 12px; background: var(--brown-dark); color: #fff; border: none; border-radius: 8px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.95rem; cursor: pointer; margin-top: 8px; transition: background 0.2s; }
+    .btn-primary:hover { background: var(--brown-mid); }
+
+    /* ── Loading ── */
+    .loading-bar { display: none; background: var(--cream-dark); border-radius: 4px; height: 3px; margin-top: 14px; overflow: hidden; }
+    .loading-bar.active { display: block; }
+    .loading-bar::after { content: ''; display: block; height: 100%; width: 38%; background: var(--brown-mid); border-radius: 4px; animation: slide 1.5s ease-in-out infinite; }
+    @keyframes slide { 0% { transform: translateX(-150%); } 100% { transform: translateX(400%); } }
+    .loading-msg { display: none; text-align: center; color: var(--text-muted); font-size: 0.82rem; margin-top: 10px; }
+    .loading-msg.active { display: block; }
+
+    /* ── Output ── */
+    .output-section { margin-top: 32px; }
+    .channel-block { background: #fff; border-radius: 16px; padding: 30px; margin-bottom: 20px; box-shadow: 0 2px 20px rgba(59,35,20,0.08); }
+    .channel-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+    .channel-icon { font-size: 1.25rem; }
+    .channel-name { font-family: 'Noto Serif KR', serif; font-size: 1.05rem; color: var(--brown-dark); }
+
+    .feed-text-box { background: var(--cream); border-radius: 10px; padding: 18px 20px; font-size: 0.9rem; line-height: 1.85; white-space: pre-wrap; word-break: keep-all; color: var(--text); min-height: 60px; }
+    .action-row { display: flex; gap: 8px; margin-top: 10px; }
+    .copy-btn { padding: 7px 18px; background: transparent; border: 1.5px solid var(--brown-light); border-radius: 6px; color: var(--brown-mid); cursor: pointer; font-size: 0.82rem; font-family: 'Noto Sans KR', sans-serif; transition: all 0.15s; }
+    .copy-btn:hover  { background: var(--brown-dark); border-color: var(--brown-dark); color: #fff; }
+    .copy-btn.copied { background: #4CAF50; border-color: #4CAF50; color: #fff; }
+
+    /* ── Thumbnails ── */
+    .thumb-section { margin-top: 22px; border-top: 1px solid var(--cream-dark); padding-top: 22px; }
+    .thumb-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.07em; }
+
+    .thumbnail { position: relative; overflow: hidden; border-radius: 10px; background: linear-gradient(135deg, #3B2314 0%, #8B5E3C 60%, #C4956A 100%); }
+    .thumb-square { width: 100%; aspect-ratio: 1/1; max-width: 380px; }
+    .thumb-wide   { width: 100%; aspect-ratio: 16/9; }
+
+    .thumb-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.75; display: none; }
+    .thumb-overlay { position: absolute; inset: 0; background: linear-gradient(160deg, rgba(59,35,20,0.15) 0%, rgba(59,35,20,0.70) 100%); }
+    .thumb-inner { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 7%; }
+    .thumb-logo-text { font-family: 'Noto Serif KR', serif; color: rgba(255,255,255,0.92); font-size: clamp(0.65rem, 1.8vw, 0.95rem); letter-spacing: 0.18em; font-weight: 600; }
+    .thumb-center { text-align: center; }
+    .thumb-headline { font-family: 'Noto Serif KR', serif; color: #fff; font-size: clamp(1rem, 4vw, 1.75rem); font-weight: 700; line-height: 1.3; text-shadow: 0 2px 10px rgba(0,0,0,0.45); }
+    .thumb-sub { color: rgba(255,255,255,0.82); font-size: clamp(0.6rem, 1.6vw, 0.85rem); margin-top: 8px; letter-spacing: 0.04em; }
+    .thumb-bottom { display: flex; justify-content: flex-end; }
+    .thumb-badge { background: rgba(255,255,255,0.13); backdrop-filter: blur(4px); color: rgba(255,255,255,0.75); font-size: clamp(0.5rem, 1.3vw, 0.7rem); padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); letter-spacing: 0.05em; }
+
+    .download-btn { display: inline-block; margin-top: 10px; padding: 7px 18px; background: transparent; border: 1.5px solid var(--brown-light); border-radius: 6px; color: var(--brown-mid); cursor: pointer; font-size: 0.82rem; font-family: 'Noto Sans KR', sans-serif; transition: all 0.15s; }
+    .download-btn:hover:not(:disabled) { background: var(--brown-dark); border-color: var(--brown-dark); color: #fff; }
+    .download-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+<!-- API Key Modal (Claude만) -->
+<div class="modal-overlay" id="keyModal">
+  <div class="modal-box">
+    <h2>API 키 설정</h2>
+    <p>처음 한 번만 입력하면 이 기기에 저장됩니다.<br>키는 브라우저 로컬스토리지에만 보관됩니다.</p>
+    <input type="password" id="claudeKeyInput" placeholder="Claude API Key  (sk-ant-...)">
+    <button class="btn-primary" onclick="saveKeys()">저장하고 시작</button>
+    <div class="key-error" id="keyError"></div>
+  </div>
+</div>
+
+<!-- Header -->
+<header>
+  <div>
+    <div class="header-brand">범표원두</div>
+    <div class="header-sub">SNS 콘텐츠 생성기</div>
+  </div>
+  <div class="header-actions">
+    <button onclick="resetKeys()">API 키 변경</button>
+  </div>
+</header>
+
+<!-- Main -->
+<main>
+
+  <!-- Input -->
+  <div class="input-card">
+    <h2>콘텐츠 입력</h2>
+    <textarea id="contentInput" placeholder="피드 내용을 자유롭게 입력하세요.&#10;예) 에티오피아 예가체프 워시드 신규 입고됐어요. 밝은 과일향에 깔끔한 산미, 여름에 딱 맞는 커피예요. 재고 한정입니다."></textarea>
+
+    <div class="option-row">
+      <div class="option-group">
+        <div class="option-label">분위기</div>
+        <div class="tag-group" id="moodGroup">
+          <span class="tag active" onclick="selectTag('mood','따뜻한',this)">따뜻한</span>
+          <span class="tag"        onclick="selectTag('mood','신선한',this)">신선한</span>
+          <span class="tag"        onclick="selectTag('mood','고급스러운',this)">고급스러운</span>
+          <span class="tag"        onclick="selectTag('mood','캐주얼한',this)">캐주얼한</span>
+        </div>
+      </div>
+      <div class="option-group">
+        <div class="option-label">목적</div>
+        <div class="tag-group" id="purposeGroup">
+          <span class="tag active" onclick="selectTag('purpose','신상 소개',this)">신상 소개</span>
+          <span class="tag"        onclick="selectTag('purpose','할인·프로모션',this)">할인·프로모션</span>
+          <span class="tag"        onclick="selectTag('purpose','브랜드 스토리',this)">브랜드 스토리</span>
+          <span class="tag"        onclick="selectTag('purpose','이벤트',this)">이벤트</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 이미지 업로드 -->
+    <div class="upload-area" id="uploadArea">
+      <label class="upload-trigger" for="bgImageInput">
+        <span class="upload-icon">🖼️</span>
+        <div class="upload-texts">
+          <div class="upload-main">썸네일 배경 이미지 선택</div>
+          <div class="upload-sub">JPG · PNG · WEBP — 없으면 커피 톤 그라디언트로 대체</div>
+        </div>
+      </label>
+      <input type="file" id="bgImageInput" accept="image/*" onchange="onImageUpload(this)">
+      <div class="image-preview" id="imagePreview">
+        <img class="preview-thumb" id="previewThumb" src="" alt="">
+        <span class="preview-name" id="previewName"></span>
+        <button class="clear-btn" onclick="clearImage()">✕</button>
+      </div>
+    </div>
+
+    <button class="generate-btn" id="generateBtn" onclick="generate()">생성하기</button>
+    <div class="loading-bar" id="loadingBar"></div>
+    <div class="loading-msg" id="loadingMsg"></div>
+  </div>
+
+  <!-- Output -->
+  <div class="output-section" id="outputSection" style="display:none">
+
+    <!-- Instagram -->
+    <div class="channel-block">
+      <div class="channel-header">
+        <span class="channel-icon">📸</span>
+        <span class="channel-name">인스타그램</span>
+      </div>
+      <div class="feed-text-box" id="instagram-text"></div>
+      <div class="action-row">
+        <button class="copy-btn" onclick="copyText('instagram-text', this)">복사</button>
+      </div>
+      <div class="thumb-section">
+        <div class="thumb-label">썸네일 미리보기 · 1:1</div>
+        <div class="thumbnail thumb-square" id="instagram-thumb">
+          <img class="thumb-bg" id="instagram-bg" src="" alt="">
+          <div class="thumb-overlay"></div>
+          <div class="thumb-inner">
+            <div class="thumb-logo-text">범표원두</div>
+            <div class="thumb-center">
+              <div class="thumb-headline" id="instagram-headline"></div>
+              <div class="thumb-sub"      id="instagram-sub"></div>
+            </div>
+            <div class="thumb-bottom"><span class="thumb-badge">Instagram</span></div>
+          </div>
+        </div>
+        <button class="download-btn" id="instagram-dl" onclick="downloadThumb('instagram-thumb','instagram-dl','인스타그램')">PNG 저장</button>
+      </div>
+    </div>
+
+    <!-- Karrot -->
+    <div class="channel-block">
+      <div class="channel-header">
+        <span class="channel-icon">🥕</span>
+        <span class="channel-name">당근 소식</span>
+      </div>
+      <div class="feed-text-box" id="karrot-text"></div>
+      <div class="action-row">
+        <button class="copy-btn" onclick="copyText('karrot-text', this)">복사</button>
+      </div>
+      <div class="thumb-section">
+        <div class="thumb-label">썸네일 미리보기 · 16:9</div>
+        <div class="thumbnail thumb-wide" id="karrot-thumb">
+          <img class="thumb-bg" id="karrot-bg" src="" alt="">
+          <div class="thumb-overlay"></div>
+          <div class="thumb-inner">
+            <div class="thumb-logo-text">범표원두</div>
+            <div class="thumb-center">
+              <div class="thumb-headline" id="karrot-headline"></div>
+              <div class="thumb-sub"      id="karrot-sub"></div>
+            </div>
+            <div class="thumb-bottom"><span class="thumb-badge">당근마켓</span></div>
+          </div>
+        </div>
+        <button class="download-btn" id="karrot-dl" onclick="downloadThumb('karrot-thumb','karrot-dl','당근소식')">PNG 저장</button>
+      </div>
+    </div>
+
+    <!-- Threads -->
+    <div class="channel-block">
+      <div class="channel-header">
+        <span class="channel-icon">🧵</span>
+        <span class="channel-name">스레드</span>
+      </div>
+      <div class="feed-text-box" id="threads-text"></div>
+      <div class="action-row">
+        <button class="copy-btn" onclick="copyText('threads-text', this)">복사</button>
+      </div>
+      <div class="thumb-section">
+        <div class="thumb-label">썸네일 미리보기 · 1:1</div>
+        <div class="thumbnail thumb-square" id="threads-thumb">
+          <img class="thumb-bg" id="threads-bg" src="" alt="">
+          <div class="thumb-overlay"></div>
+          <div class="thumb-inner">
+            <div class="thumb-logo-text">범표원두</div>
+            <div class="thumb-center">
+              <div class="thumb-headline" id="threads-headline"></div>
+              <div class="thumb-sub"      id="threads-sub"></div>
+            </div>
+            <div class="thumb-bottom"><span class="thumb-badge">Threads</span></div>
+          </div>
+        </div>
+        <button class="download-btn" id="threads-dl" onclick="downloadThumb('threads-thumb','threads-dl','스레드')">PNG 저장</button>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  let selectedMood       = '따뜻한';
+  let selectedPurpose    = '신상 소개';
+  let uploadedImageDataUrl = null;
+
+  // ── Init ──
+  window.addEventListener('load', () => {
+    const saved = localStorage.getItem('bpwd_claude');
+    if (saved) {
+      document.getElementById('claudeKeyInput').value = saved;
+    } else {
+      document.getElementById('keyModal').classList.add('active');
+    }
+  });
+
+  // ── API Key ──
+  function saveKeys() {
+    const claude = document.getElementById('claudeKeyInput').value.trim();
+    const err    = document.getElementById('keyError');
+    err.textContent = '';
+    if (!claude)                          { err.textContent = 'Claude API 키를 입력해주세요.'; return; }
+    if (!claude.startsWith('sk-ant-'))    { err.textContent = 'Claude 키는 sk-ant- 로 시작해야 합니다.'; return; }
+    localStorage.setItem('bpwd_claude', claude);
+    document.getElementById('keyModal').classList.remove('active');
+  }
+
+  function resetKeys() {
+    const existing = localStorage.getItem('bpwd_claude');
+    if (existing) document.getElementById('claudeKeyInput').value = existing;
+    document.getElementById('keyError').textContent = '';
+    document.getElementById('keyModal').classList.add('active');
+  }
+
+  // ── Tags ──
+  function selectTag(group, value, el) {
+    const gid = group === 'mood' ? 'moodGroup' : 'purposeGroup';
+    document.querySelectorAll('#' + gid + ' .tag').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    if (group === 'mood') selectedMood    = value;
+    else                  selectedPurpose = value;
+  }
+
+  // ── Image Upload ──
+  function onImageUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadedImageDataUrl = e.target.result;
+      document.getElementById('previewThumb').src   = uploadedImageDataUrl;
+      document.getElementById('previewName').textContent = file.name;
+      document.getElementById('imagePreview').classList.add('active');
+      document.getElementById('uploadArea').classList.add('has-image');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearImage() {
+    uploadedImageDataUrl = null;
+    document.getElementById('bgImageInput').value = '';
+    document.getElementById('previewThumb').src   = '';
+    document.getElementById('previewName').textContent = '';
+    document.getElementById('imagePreview').classList.remove('active');
+    document.getElementById('uploadArea').classList.remove('has-image');
+  }
+
+  // ── Copy ──
+  async function copyText(id, btn) {
+    try {
+      await navigator.clipboard.writeText(document.getElementById(id).innerText);
+      btn.textContent = '복사됨 ✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = '복사'; btn.classList.remove('copied'); }, 2000);
+    } catch (e) {
+      alert('복사 실패. 텍스트를 직접 선택해 복사해주세요.');
+    }
+  }
+
+  // ── Generate ──
+  async function generate() {
+    const content = document.getElementById('contentInput').value.trim();
+    if (!content) { alert('피드 내용을 입력해주세요.'); return; }
+
+    const claudeKey = localStorage.getItem('bpwd_claude');
+    if (!claudeKey) { document.getElementById('keyModal').classList.add('active'); return; }
+
+    const btn = document.getElementById('generateBtn');
+    const bar = document.getElementById('loadingBar');
+    const msg = document.getElementById('loadingMsg');
+    btn.disabled = true;
+    btn.textContent = '생성 중...';
+    bar.classList.add('active');
+    msg.classList.add('active');
+
+    try {
+      msg.textContent = 'Claude로 피드 텍스트 생성 중...';
+      const result = await callClaude(content, selectedMood, selectedPurpose, claudeKey);
+
+      msg.textContent = '렌더링 중...';
+      renderOutput(result, uploadedImageDataUrl);
+
+      document.getElementById('outputSection').style.display = 'block';
+      document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+    } catch (e) {
+      alert('오류가 발생했습니다:\n' + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '생성하기';
+      bar.classList.remove('active');
+      msg.classList.remove('active');
+    }
+  }
+
+  // ── Claude API ──
+  async function callClaude(content, mood, purpose, key) {
+    const prompt = `당신은 범표원두의 SNS 콘텐츠 변환 담당자입니다.
+입력된 피드 원문을 아래 세 채널용으로 각각 변환하세요.
+
+[인스타그램]
+- 150~300자, 감성적 정제 문체
+- 해시태그 10~15개 본문 아래 분리
+- 훅→본문→여운→해시태그 구조
+
+[당근 소식]
+- 200~400자, 친근한 존댓말 구어체
+- 지역명(예: 종로구, 서울) 포함, 이모지 3~5개
+- 인사→소식→CTA 구조
+
+[스레드]
+- 150자 이내, 날것의 짧은 반말
+- 해시태그 없거나 1개
+- 훅→짧은 본문→질문형 마무리
+
+원문: ${content}
+분위기: ${mood}
+목적: ${purpose}
+
+반드시 아래 JSON 형식으로만 응답하세요. 설명·마크다운 없이 JSON만 출력:
+{
+  "instagram": "인스타그램 피드 전체 (줄바꿈 포함)",
+  "instagram_headline": "썸네일 메인 문구 10자 이내",
+  "instagram_sub": "썸네일 서브 문구 20자 이내",
+  "karrot": "당근 소식 피드 전체 (줄바꿈 포함)",
+  "karrot_headline": "썸네일 메인 문구 10자 이내",
+  "karrot_sub": "썸네일 서브 문구 20자 이내",
+  "threads": "스레드 피드 전체",
+  "threads_headline": "썸네일 메인 문구 10자 이내",
+  "threads_sub": "썸네일 서브 문구 20자 이내"
+}`;
+
+    const res = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        apiKey: key,
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2048,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error('Claude API ' + res.status + ': ' + (e.error && e.error.message ? e.error.message : res.statusText));
+    }
+
+    const data = await res.json();
+    const raw  = data.content[0].text;
+    const m    = raw.match(/\{[\s\S]*\}/);
+    if (!m) throw new Error('Claude 응답 파싱 실패. 다시 시도해주세요.');
+    try {
+      return JSON.parse(m[0]);
+    } catch (e) {
+      throw new Error('JSON 파싱 오류. 다시 시도해주세요.');
+    }
+  }
+
+  // ── Render ──
+  function renderOutput(r, imgDataUrl) {
+    setChannel('instagram', r.instagram, r.instagram_headline, r.instagram_sub, imgDataUrl);
+    setChannel('karrot',    r.karrot,    r.karrot_headline,    r.karrot_sub,    imgDataUrl);
+    setChannel('threads',   r.threads,   r.threads_headline,   r.threads_sub,   imgDataUrl);
+  }
+
+  function setChannel(id, text, headline, sub, imgDataUrl) {
+    document.getElementById(id + '-text').textContent     = text;
+    document.getElementById(id + '-headline').textContent = headline;
+    document.getElementById(id + '-sub').textContent      = sub;
+    const bg   = document.getElementById(id + '-bg');
+    const wrap = document.getElementById(id + '-thumb');
+    if (imgDataUrl) {
+      bg.src           = imgDataUrl;
+      bg.style.display = 'block';
+      wrap.style.background = '';
+    } else {
+      bg.style.display = 'none';
+      wrap.style.background = 'linear-gradient(135deg, #3B2314 0%, #8B5E3C 60%, #C4956A 100%)';
+    }
+  }
+
+  // ── Download ──
+  async function downloadThumb(thumbId, btnId, label) {
+    const el  = document.getElementById(thumbId);
+    const btn = document.getElementById(btnId);
+    btn.disabled    = true;
+    btn.textContent = '저장 중...';
+    try {
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#3B2314' });
+      const a = document.createElement('a');
+      a.download = '범표원두_' + label + '_' + new Date().toISOString().slice(0,10) + '.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    } catch (e) {
+      alert('PNG 저장 실패: ' + e.message);
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = 'PNG 저장';
+    }
+  }
+</script>
+</body>
+</html>
