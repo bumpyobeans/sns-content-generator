@@ -133,6 +133,7 @@
 
     .thumbnail { position: relative; overflow: hidden; border-radius: 10px; background: linear-gradient(135deg, #3B2314 0%, #8B5E3C 60%, #C4956A 100%); }
     .thumb-square { width: 100%; aspect-ratio: 1/1; max-width: 380px; }
+    .thumb-reels  { aspect-ratio: 9/16; max-width: 220px; }
     .thumb-wide   { width: 100%; aspect-ratio: 16/9; }
 
     .thumb-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.75; display: none; }
@@ -235,8 +236,8 @@
         <button class="copy-btn" onclick="copyText('instagram-text', this)">복사</button>
       </div>
       <div class="thumb-section">
-        <div class="thumb-label">썸네일 미리보기 · 1:1</div>
-        <div class="thumbnail thumb-square" id="instagram-thumb">
+        <div class="thumb-label">썸네일 미리보기 · 9:16 (릴스)</div>
+        <div class="thumbnail thumb-reels" id="instagram-thumb">
           <img class="thumb-bg" id="instagram-bg" src="" alt="">
           <div class="thumb-overlay"></div>
           <div class="thumb-inner">
@@ -245,7 +246,7 @@
               <div class="thumb-headline" id="instagram-headline"></div>
               <div class="thumb-sub"      id="instagram-sub"></div>
             </div>
-            <div class="thumb-bottom"><span class="thumb-badge">Instagram</span></div>
+            <div class="thumb-bottom"></div>
           </div>
         </div>
         <button class="download-btn" id="instagram-dl" onclick="downloadThumb('instagram-thumb','instagram-dl','인스타그램')">PNG 저장</button>
@@ -273,7 +274,7 @@
               <div class="thumb-headline" id="karrot-headline"></div>
               <div class="thumb-sub"      id="karrot-sub"></div>
             </div>
-            <div class="thumb-bottom"><span class="thumb-badge">당근마켓</span></div>
+            <div class="thumb-bottom"></div>
           </div>
         </div>
         <button class="download-btn" id="karrot-dl" onclick="downloadThumb('karrot-thumb','karrot-dl','당근소식')">PNG 저장</button>
@@ -301,7 +302,7 @@
               <div class="thumb-headline" id="threads-headline"></div>
               <div class="thumb-sub"      id="threads-sub"></div>
             </div>
-            <div class="thumb-bottom"><span class="thumb-badge">Threads</span></div>
+            <div class="thumb-bottom"></div>
           </div>
         </div>
         <button class="download-btn" id="threads-dl" onclick="downloadThumb('threads-thumb','threads-dl','스레드')">PNG 저장</button>
