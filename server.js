@@ -25,10 +25,10 @@ function httpsPost(hostname, urlPath, headers, body) {
 // Claude 프록시
 app.post('/api/claude', async (req, res) => {
   try {
-    const { apiKey, ...payload } = req.body;
+    const payload = req.body;
     const result = await httpsPost(
       'api.anthropic.com', '/v1/messages',
-      { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      { 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
       payload
     );
     res.status(result.status).type('json').send(result.body);
