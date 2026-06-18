@@ -1,10 +1,8 @@
 const express = require('express');
 const https   = require('https');
-const path    = require('path');
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(__dirname));
 
 function httpsPost(hostname, urlPath, headers, body) {
   return new Promise((resolve, reject) => {
@@ -40,10 +38,15 @@ app.post('/api/claude', async (req, res) => {
 });
 
 
-const PORT = 3333;
-app.listen(PORT, () => {
-  console.log('\n  범표원두 SNS 콘텐츠 생성기');
-  console.log('  ─────────────────────────────────');
-  console.log('  브라우저: http://localhost:' + PORT);
-  console.log('  종료: Ctrl + C\n');
-});
+if (require.main === module) {
+  app.use(express.static(__dirname));
+  const PORT = process.env.PORT || 3333;
+  app.listen(PORT, () => {
+    console.log('\n  범표원두 SNS 콘텐츠 생성기');
+    console.log('  ─────────────────────────────────');
+    console.log('  브라우저: http://localhost:' + PORT);
+    console.log('  종료: Ctrl + C\n');
+  });
+}
+
+module.exports = app;
